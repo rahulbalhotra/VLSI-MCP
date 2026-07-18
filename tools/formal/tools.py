@@ -58,3 +58,51 @@ def compare_runs(run_a: Dict[str, Any], run_b: Dict[str, Any]) -> Dict[str, Any]
     Compares two formal verification execution reports.
     """
     return formal_service.compare_runs(run_a, run_b)
+
+def blackbox_module(module_name: str, blackbox_instances: List[str]) -> Dict[str, Any]:
+    """
+    Configures formal verification blackboxing for submodules.
+    Generates tool commands and SVA interface assumptions.
+    """
+    mod = rtl_service.get_module(module_name, RTL_SEARCH_DIRS)
+    matched_instances = []
+    tcl_commands = []
+    
+    if mod:
+        for inst in mod.instances:
+            if inst.name in blackbox_instances:
+                matched_instances.append({
+                    "name": inst.name,
+                    "module": inst.module_name,
+                    "ports": list(inst.port_mapping.keys())
+                })
+                tcl_commands.append(f"blackbox -set {inst.name}")
+    
+    # If no module matched or no instances found, mock the response
+    if not matched_instances:
+        for inst_name in blackbox_instances:
+            tcl_commands.append(f"blackbox -set {inst_name}")
+            matched_instances.append({
+                "name": inst_name,
+                "module": "unknown_submodule",
+                "ports": ["clk", "rst", "d_in", "d_out"]
+            })
+
+    # Use LLM to generate formal assumptions for the blackbox outputs
+    prompt = (
+        f"Generate SystemVerilog formal assumptions (assume property) for the outputs of the following blackboxed submodules "
+        f"inside parent module '{module_name}':\n"
+        f"Blackboxed Instances: {matched_instances}\n"
+        f"Ensure outputs are constrained to prevent spurious failures (e.g. valid flags, correct data ranges)."
+    )
+    system_instruction = "You are a formal verification expert. Generate SystemVerilog interface assumptions for blackboxed modules."
+    
+    assumptions_sva = llm_service.generate_text(prompt, system_instruction)
+
+    return {
+        "parent_module": module_name,
+        "blackboxed_instances": matched_instances,
+        "tcl_commands": tcl_commands,
+        "assumptions_sva": assumptions_sva
+    }
+

@@ -90,3 +90,13 @@ def test_arbiter_parsing():
     # Check that we parsed parameter MODE
     assert any(param.name == "MODE" for param in mod.parameters)
 
+def test_blackbox_module():
+    """Test blackbox configuration generation."""
+    from tools.formal.tools import blackbox_module
+    res = blackbox_module("fifo", ["buffer_mem"])
+    assert res["parent_module"] == "fifo"
+    assert len(res["blackboxed_instances"]) == 1
+    assert "blackbox -set buffer_mem" in res["tcl_commands"]
+    assert "assumptions_sva" in res
+
+

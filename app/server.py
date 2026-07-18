@@ -150,6 +150,13 @@ def compare_runs(run_a: Dict[str, Any], run_b: Dict[str, Any]) -> Dict[str, Any]
     """
     return formal_tools.compare_runs(run_a, run_b)
 
+@mcp.tool()
+def blackbox_module(module_name: str, blackbox_instances: List[str]) -> Dict[str, Any]:
+    """
+    Configures formal verification blackboxing for submodules. Generates tool commands and SVA interface assumptions.
+    """
+    return formal_tools.blackbox_module(module_name, blackbox_instances)
+
 
 # ==========================================
 # 4. Waveform Tools
