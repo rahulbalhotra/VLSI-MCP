@@ -76,3 +76,17 @@ def test_regression_service():
     # Resolved failure is p_axi_handshake (it was failing in 17, but not in 18)
     assert "p_axi_handshake" in summary["resolved_failures"]
     assert summary["trends"]["status_change"] == "failed -> failed"
+
+def test_arbiter_parsing():
+    """Test parsing of the new arbiter module."""
+    arb_v = os.path.join(WORKSPACE_ROOT, "design", "arbiter.sv")
+    assert os.path.exists(arb_v)
+    modules = VerilogParser.parse_file(arb_v)
+    assert len(modules) == 1
+    mod = modules[0]
+    assert mod.name == "arbiter"
+    assert any(p.name == "req" for p in mod.ports)
+    assert any(p.name == "gnt" for p in mod.ports)
+    # Check that we parsed parameter MODE
+    assert any(param.name == "MODE" for param in mod.parameters)
+

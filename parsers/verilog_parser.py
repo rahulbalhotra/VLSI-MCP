@@ -72,7 +72,7 @@ class VerilogParser:
         parameters = []
         # Match parameter name = value; or parameter name = value, in header or body
         # Supporting localparam and parameter
-        param_pattern = r'\b(parameter|localparam)\b\s*(?:type)?\s*(\w+)\s*=\s*([^,;\n\)]+)'
+        param_pattern = r'\b(parameter|localparam)\b\s*(?:type\s+)?(?:[a-zA-Z_]\w*(?:\s*\[[^\]]+\])?\s+)?(\w+)\s*=\s*([^,;\n\)]+)'
         matches = re.findall(param_pattern, content)
         for ptype, name, val in matches:
             val_clean = val.strip()
