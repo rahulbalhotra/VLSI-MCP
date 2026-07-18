@@ -1,0 +1,7 @@
+mcp
+fastmcp
+pydantic
+google-generativeai
+pytest
+pytest-asyncio
+numpy
